@@ -16,7 +16,7 @@ if (typeof customElements !== 'undefined') {
     async init() {
       let template = this.querySelector('template');
       if (!template) {
-        console.warn('Please put source code insinde the <template> tag.');
+        console.warn('Please put source code inside the <template> tag.');
         return false;
       }
       const meta = {
