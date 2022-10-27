@@ -1,0 +1,14 @@
+{
+  "name": "svelte-pen",
+  "version": "1.0.0",
+  "description": "Create Svelte component demo quickly",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "svelte"
+  ],
+  "author": "yuanchuan",
+  "license": "MIT"
+}
