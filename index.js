@@ -89,7 +89,7 @@ if (typeof customElements !== 'undefined') {
           return getMainSource(element, meta);
         }
         if (isCodePenModule(dep)) {
-          return await getCodePenSource(dep);
+          return await getCodePenSource(dep, meta);
         }
         if (isSvelteModule(dep)) {
           return await getModuleSource(dep, meta)
@@ -108,6 +108,12 @@ if (typeof customElements !== 'undefined') {
     }
   }
 
+  function getElementValue(element) {
+    let tagName = element.tagName.toLowerCase();
+    if (tagName === 'textarea') return element.value;
+    return element.innerHTML;
+  }
+
   async function getModuleSource(name, meta) {
     if (name === 'svelte') {
       name == '/';
@@ -119,12 +125,6 @@ if (typeof customElements !== 'undefined') {
     }
     let text = await (await fetch(`https://unpkg.com/svelte@${meta.version}${name}/index.mjs`)).text();
     return meta.resourceCache[name] = text;
-  }
-
-  function getElementValue(element) {
-    let tagName = element.tagName.toLowerCase();
-    if (tagName === 'textarea') return element.value;
-    return element.innerHTML;
   }
 
   async function getMainSource(element, meta) {
@@ -140,15 +140,20 @@ if (typeof customElements !== 'undefined') {
     }
   }
 
-  async function getCodePenSource(name) {
+  async function getCodePenSource(name, meta) {
     name = name.replace(/\.svelte$/, '.html');
+    if (meta.resourceCache[name]) {
+      return meta.resourceCache[name];
+    }
     let html = await (await fetch(name)).text();
     let template = document.createElement('template');
     template.innerHTML = html;
     let innerTemplate =
       template.content.querySelector('svelte-pen template') ||
       template.content.querySelector('svelte-pen textarea');
-    if (!innerTemplate) return '';
-    return getElementValue(innerTemplate);
+    if (!innerTemplate) {
+      return '';
+    }
+    return meta.resourceCache[name] = getElementValue(innerTemplate);
   }
 }
