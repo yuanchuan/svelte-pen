@@ -6,12 +6,13 @@
   <style>
     html, body { height: 100%; margin: 0; background: #0B0E10; }
     body { display: grid; place-content: center }
+    svelte-pen:not(:defined) { visibility: hidden; }
   </style>
   <script type="module" src="../index.js"></script>
 </head>
 <body>
   <svelte-pen>
-    <template>
+    <textarea>
 
       <svg viewBox="0 0 100 100" on:click={getNewValue}>
         <g transform="translate(50, 50)">
@@ -102,7 +103,7 @@
           fill: rgba(255, 255, 255, .2);
         }
       </style>
-    </template>
+    </textarea>
   </svelte-pen>
 </body>
 </html>
