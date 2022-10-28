@@ -1,7 +1,7 @@
 if (typeof customElements !== 'undefined') {
   const resourceCache = {};
   let rollup;
-  let compile;
+  let svelte;
 
   class SveltePen extends HTMLElement {
     constructor() {
@@ -14,9 +14,8 @@ if (typeof customElements !== 'undefined') {
       this.init();
     }
     async init() {
-      let template = this.querySelector('template');
+      let template = this.querySelector('textarea') || this.querySelector('template');
       if (!template) {
-        console.warn('Please put source code inside the <template> tag.');
         return false;
       }
       const meta = {
@@ -49,6 +48,12 @@ if (typeof customElements !== 'undefined') {
     return name && (name === 'svelte' || name.startsWith('svelte/'));
   }
 
+  function isCodePenModule(name) {
+    let matchedHead = name.startsWith('https://codepen.io/') || name.startsWith('/');
+    let matchedTail = name.endsWith('.svelte');
+    return matchedHead && matchedTail;
+  }
+
   function resolve(name) {
     if (isSvelteModule(name)) {
       return name;
@@ -67,6 +72,9 @@ if (typeof customElements !== 'undefined') {
     return {
       name: 'input-source',
       resolveId(name) {
+        if (isCodePenModule(name)) {
+          return name;
+        }
         if (name === 'main.js') {
           return name;
         }
@@ -80,8 +88,20 @@ if (typeof customElements !== 'undefined') {
         if (dep === 'main.js') {
           return getMainSource(element, meta);
         }
+        if (isCodePenModule(dep)) {
+          return await getCodePenSource(dep);
+        }
         if (isSvelteModule(dep)) {
           return await getModuleSource(dep, meta)
+        }
+        return null;
+      },
+      async transform(code, dep) {
+        if (isCodePenModule(dep)) {
+          if (!svelte) {
+            svelte = (await import(`https://unpkg.com/svelte@${meta.version}/compiler.mjs`));
+          }
+          return svelte.compile(code).js;
         }
         return null;
       }
@@ -101,15 +121,34 @@ if (typeof customElements !== 'undefined') {
     return meta.resourceCache[name] = text;
   }
 
+  function getElementValue(element) {
+    let tagName = element.tagName.toLowerCase();
+    if (tagName === 'textarea') return element.value;
+    return element.innerHTML;
+  }
+
   async function getMainSource(element, meta) {
-    if (!compile) {
-      compile = (await import(`https://unpkg.com/svelte@${meta.version}/compiler.mjs`)).compile;
+    if (!svelte) {
+      svelte = (await import(`https://unpkg.com/svelte@${meta.version}/compiler.mjs`));
     }
     try {
-      let { js } = compile(element.innerHTML);
-      return js.code;
+      let html = getElementValue(element);
+      let result = svelte.compile(html);
+      return result.js.code;
     } catch (e) {
       return '';
     }
+  }
+
+  async function getCodePenSource(name) {
+    name = name.replace(/\.svelte$/, '.html');
+    let html = await (await fetch(name)).text();
+    let template = document.createElement('template');
+    template.innerHTML = html;
+    let innerTemplate =
+      template.content.querySelector('svelte-pen template') ||
+      template.content.querySelector('svelte-pen textarea');
+    if (!innerTemplate) return '';
+    return getElementValue(innerTemplate);
   }
 }
