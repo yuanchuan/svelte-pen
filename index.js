@@ -7,11 +7,15 @@ if (typeof customElements !== 'undefined') {
     constructor() {
       super();
       this.root = this.attachShadow({ mode: 'open' });
-      this.id = 'svelte-pen-' + Math.random();
       this.version = this.getAttribute('version') || '3.52.0';
     }
     connectedCallback() {
       this.init();
+    }
+    disconnectedCallback() {
+      if (this.component && this.component.$destroy) {
+        this.component.$destroy();
+      }
     }
     async init() {
       let template = this.querySelector('textarea') || this.querySelector('template');
@@ -19,12 +23,11 @@ if (typeof customElements !== 'undefined') {
         return false;
       }
       const meta = {
-        id: this.id,
         version: this.version,
         resourceCache: resourceCache,
       }
       if (!rollup) {
-        rollup = (await import('https://unpkg.com/@rollup/browser@3.2.3/dist/es/rollup.browser.js')).rollup;
+        rollup = await getRollup();
       }
       const bundle = await rollup({
         input: 'main.js',
@@ -36,12 +39,24 @@ if (typeof customElements !== 'undefined') {
 
       let Component = (await import(url)).default;
       if (Component) {
-        new Component({ target: this.root });
+        this.component = new Component({ target: this.root });
       }
     }
   }
   if (!customElements.get('svelte-pen')) {
     customElements.define('svelte-pen', SveltePen);
+  }
+
+  async function getSvelte(version) {
+    return await import(`https://unpkg.com/svelte@${version}/compiler.mjs`);
+  }
+
+  async function getSvelteModule(version, name) {
+    return await (await fetch(`https://unpkg.com/svelte@${version}${name}/index.mjs`)).text();
+  }
+
+  async function getRollup() {
+    return (await import('https://unpkg.com/@rollup/browser@3.2.3/dist/es/rollup.browser.js')).rollup;
   }
 
   function isSvelteModule(name) {
@@ -99,7 +114,7 @@ if (typeof customElements !== 'undefined') {
       async transform(code, dep) {
         if (isCodePenModule(dep)) {
           if (!svelte) {
-            svelte = (await import(`https://unpkg.com/svelte@${meta.version}/compiler.mjs`));
+            svelte = await getSvelte(meta.version);
           }
           return svelte.compile(code).js;
         }
@@ -108,7 +123,7 @@ if (typeof customElements !== 'undefined') {
     }
   }
 
-  function getElementValue(element) {
+  function getTemplateValue(element) {
     let tagName = element.tagName.toLowerCase();
     if (tagName === 'textarea') return element.value;
     return element.innerHTML;
@@ -123,16 +138,16 @@ if (typeof customElements !== 'undefined') {
     if (meta.resourceCache[name]) {
       return meta.resourceCache[name];
     }
-    let text = await (await fetch(`https://unpkg.com/svelte@${meta.version}${name}/index.mjs`)).text();
+    let text = getSvelteModule(meta.version, name);
     return meta.resourceCache[name] = text;
   }
 
   async function getMainSource(element, meta) {
     if (!svelte) {
-      svelte = (await import(`https://unpkg.com/svelte@${meta.version}/compiler.mjs`));
+      svelte = await getSvelte(meta.version);
     }
     try {
-      let html = getElementValue(element);
+      let html = getTemplateValue(element);
       let result = svelte.compile(html);
       return result.js.code;
     } catch (e) {
@@ -147,13 +162,17 @@ if (typeof customElements !== 'undefined') {
     }
     let html = await (await fetch(name)).text();
     let template = document.createElement('template');
+    let source = '';
     template.innerHTML = html;
     let innerTemplate =
       template.content.querySelector('svelte-pen template') ||
       template.content.querySelector('svelte-pen textarea');
-    if (!innerTemplate) {
-      return '';
+    if (innerTemplate) {
+      source = getTemplateValue(innerTemplate);
     }
-    return meta.resourceCache[name] = getElementValue(innerTemplate);
+    if (source) {
+      meta.resourceCache[name] = source;
+    }
+    return source;
   }
 }
