@@ -19,7 +19,7 @@ Create Svelte component demo quickly.
 </textarea></svelte-pen>
 ```
 
-## A pen on CodePen as a single Svelte comonent
+## A pen on CodePen as a single Svelte component
 
 
 ```html
