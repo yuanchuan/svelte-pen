@@ -1,9 +1,9 @@
-if (typeof customElements !== 'undefined') {
+if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) {
   const resourceCache = {};
   let rollup;
   let svelte;
 
-  class SveltePen extends HTMLElement {
+  customElements.define('svelte-pen', class SveltePen extends HTMLElement {
     constructor() {
       super();
       this.root = this.attachShadow({ mode: 'open' });
@@ -42,10 +42,7 @@ if (typeof customElements !== 'undefined') {
         this.component = new Component({ target: this.root });
       }
     }
-  }
-  if (!customElements.get('svelte-pen')) {
-    customElements.define('svelte-pen', SveltePen);
-  }
+  });
 
   async function getSvelte(version) {
     return await import(`https://unpkg.com/svelte@${version}/compiler.mjs`);
@@ -57,6 +54,10 @@ if (typeof customElements !== 'undefined') {
 
   async function getRollup() {
     return (await import('https://unpkg.com/@rollup/browser@3.2.3/dist/es/rollup.browser.js')).rollup;
+  }
+
+  function isMainSource(name) {
+    return name === 'main.js';
   }
 
   function isSvelteModule(name) {
@@ -88,10 +89,10 @@ if (typeof customElements !== 'undefined') {
     return {
       name: 'input-source',
       resolveId(name) {
-        if (isCodePenModule(name)) {
+        if (isMainSource(name)) {
           return name;
         }
-        if (name === 'main.js') {
+        if (isCodePenModule(name)) {
           return name;
         }
         name = resolve(name);
@@ -101,7 +102,7 @@ if (typeof customElements !== 'undefined') {
         return null;
       },
       async load(dep) {
-        if (dep === 'main.js') {
+        if (isMainSource(dep)) {
           return getMainSource(element, meta);
         }
         if (isCodePenModule(dep)) {
