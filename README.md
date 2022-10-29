@@ -19,15 +19,14 @@ Create Svelte component demo quickly.
 </textarea></svelte-pen>
 ```
 
-## A pen on CodePen as a single Svelte component
-
+#### Import another pen as Svelte component on CodePen.
 
 ```html
 <svelte-pen><textarea>
   <Percent value={20} />
 
   <script>
-    import Percent from '/yuanchuan/pen/RwJPoNr.svelte';
+    import Percent from '/yuanchuan/pen/WNybLmE.svelte';
   </script>
 </textarea></svelte-pen>
 ```
