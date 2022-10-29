@@ -10,5 +10,14 @@
     "svelte"
   ],
   "author": "yuanchuan",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuanchuan/svelte-pen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yuanchuan/svelte-pen/issues"
+  },
+  "homepage": "https://github.com/yuanchuan/svelte-pen#readme"
 }
