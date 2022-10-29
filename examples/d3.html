@@ -1,0 +1,103 @@
+<style>
+  html, body { height: 100%; margin: 0; background: #0B0E10 }
+  body { display: grid; place-content: center }
+  svelte-pen:not(:defined) { visibility: hidden }
+</style>
+
+<script type="module" src="https://unpkg.com/svelte-pen"></script>
+
+<svelte-pen>
+  <textarea>
+
+    <svg viewBox="0 0 100 100" on:click={getNewValue}>
+      <g transform="translate(50, 50)">
+        <g class="outline">
+          <path d={outline()} />
+        </g>
+        <g class="graph" fill={color}>
+          <path d={path} />
+          <text font-size="24.5" text-anchor="middle" y="10">{_value}%</text>
+        </g>
+      </g>
+    </svg>
+
+    <script>
+      import { scaleLinear, scalePow } from 'https://cdn.skypack.dev/d3-scale';
+      import { arc } from 'https://cdn.skypack.dev/d3-shape';
+
+      import { tweened } from 'svelte/motion';
+      import { expoOut } from 'svelte/easing';
+
+      let value = 100 * Math.random();
+
+      $: _value = transformValue(value);
+
+      function getNewValue() {
+        value = 100 * Math.random();
+      }
+
+      function transformValue(input) {
+        let result = Math.floor(input);
+        if (Number.isNaN(result)) {
+          result = 0;
+        }
+        return result;
+      }
+
+      let width = 8;
+      let radius = 50;
+
+      let outline = arc()
+        .innerRadius(radius - width)
+        .outerRadius(radius)
+        .startAngle(0)
+        .endAngle(Math.PI * 2);
+
+      let tween = tweened(0, {
+        duration: 400 + Math.random() * 200,
+        easing: expoOut
+      });
+
+      $: scaleAngle = scaleLinear()
+        .domain([0, 100])
+        .range([0, Math.PI * 2]);
+
+      $: scaleColor = scalePow()
+        .exponent(2)
+        .domain([0, 100])
+        .range(['#6de835', '#e83562']);
+
+      $: arcPath = arc()
+        .innerRadius(radius - width)
+        .outerRadius(radius)
+        .cornerRadius(10)
+        .startAngle(0)
+        .endAngle(scaleAngle($tween));
+
+      $: path = arcPath();
+      $: color = scaleColor(_value);
+
+      $: if (_value !== undefined) {
+        tween && tween.set(_value);
+      }
+    </script>
+
+    <style>
+      svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        cursor: pointer;
+        user-select: none;
+      }
+      text {
+        stroke: none;
+        font-family: verdana;
+      }
+      .outline {
+        fill: rgba(255, 255, 255, .2);
+      }
+    </style>
+
+  </textarea>
+</svelte-pen>
