@@ -66,9 +66,14 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
     return name && (name === 'svelte' || name.startsWith('svelte/'));
   }
 
+  function isCodepenHost() {
+    let hostname = location.hostname;
+    return hostname === 'codepen.io' || hostname === 'cdpn.io';
+  }
+
   function isCodePenModule(name) {
     let matchedHead = name.startsWith('https://codepen.io/');
-    let matchedHost = location.hostname === 'codepen.io' && name.startsWith('/');
+    let matchedHost = name.startsWith('/') && isCodepenHost();
     let matchedTail = name.endsWith('.svelte');
     return (matchedHead || matchedHost) && matchedTail;
   }
