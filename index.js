@@ -64,9 +64,10 @@ if (typeof customElements !== 'undefined') {
   }
 
   function isCodePenModule(name) {
-    let matchedHead = name.startsWith('https://codepen.io/') || name.startsWith('/');
+    let matchedHead = name.startsWith('https://codepen.io/');
+    let matchedHost = location.hostname === 'codepen.io' && name.startsWith('/');
     let matchedTail = name.endsWith('.svelte');
-    return matchedHead && matchedTail;
+    return (matchedHead || matchedHost) && matchedTail;
   }
 
   function resolve(name) {
