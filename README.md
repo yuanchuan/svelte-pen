@@ -19,7 +19,7 @@ Create Svelte component demo quickly.
 </textarea></svelte-pen>
 ```
 
-#### Import another pen as Svelte component on CodePen.
+### Import another pen as Svelte component on CodePen.
 
 ```html
 <svelte-pen><textarea>
@@ -29,4 +29,28 @@ Create Svelte component demo quickly.
     import Percent from '/yuanchuan/pen/WNybLmE.svelte';
   </script>
 </textarea></svelte-pen>
+```
+
+### Pass component attributes to Svelte.
+
+```html
+<svelte-pen name="svelte"><textarea>
+  <p>
+    Hello {name}!
+  </p>
+
+  <script>
+    export let name
+  </script>
+</textarea></svelte-pen>
+```
+
+### Use different Svelte version.
+
+The default version is `3.52.0` but you can specify a different version through `svelte:version` attribute.
+
+```html
+<svelte-pen svelte:version="latest">
+
+</svelte-pen>
 ```
