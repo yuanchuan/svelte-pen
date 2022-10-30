@@ -3,7 +3,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
   let rollup;
   let svelte;
 
-  customElements.define('svelte-pen', class SveltePen extends HTMLElement {
+  customElements.define('svelte-pen', class extends HTMLElement {
     constructor() {
       super();
       this.root = this.attachShadow({ mode: 'open' });
