@@ -140,7 +140,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
 
   async function getModuleSource(name, meta) {
     if (name === 'svelte') {
-      name == '/';
+      name = '/';
     } else {
       name = name.replace('svelte/', '/');
     }
