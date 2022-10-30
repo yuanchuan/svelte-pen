@@ -7,12 +7,15 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
     constructor() {
       super();
       this.root = this.attachShadow({ mode: 'open' });
-      this.version = this.getAttribute('version') || '3.52.0';
+      this.version = this.getAttribute('svelte:version') || '3.52.0';
     }
     connectedCallback() {
       this.init();
     }
     disconnectedCallback() {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
       if (this.component && this.component.$destroy) {
         this.component.$destroy();
       }
@@ -48,8 +51,34 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
 
       let Component = (await import(url)).default;
       if (Component) {
-        this.component = new Component({ target: this.root });
+        this.component = new Component({
+          target: this.root,
+          props: this.getAttributeMapping()
+        });
       }
+      this.watchAttributes();
+    }
+    getAttributeMapping() {
+      let mapping = {};
+      for (let name of this.getAttributeNames()) {
+        if (!/^svelte:/.test(name)) {
+          mapping[name] = this.getAttribute(name);
+        }
+      }
+      return mapping;
+    }
+    watchAttributes() {
+      this.observer = new MutationObserver(mutationList => {
+        if (!this.component) {
+          return false;
+        }
+        for (let {type, attributeName: name} of mutationList) {
+          if (type === 'attributes' && !/^svelte:/.test(name)) {
+            this.component.$set({ [name]: this.getAttribute(name) });
+          }
+        }
+      });
+      this.observer.observe(this, { attributes: true });
     }
   });
 
