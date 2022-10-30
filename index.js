@@ -18,6 +18,13 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
       }
     }
     async init() {
+      this.root.innerHTML = `
+        <style>
+          :host {
+            display: contents;
+          }
+        </style>
+      `;
       let template =
         this.querySelector(':scope > textarea') ||
         this.querySelector(':scope > template');
