@@ -8,6 +8,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
       super();
       this.root = this.attachShadow({ mode: 'open' });
       this.version = this.getAttribute('svelte:version') || '3.52.0';
+      this.setInitialStyle();
     }
     connectedCallback() {
       this.init();
@@ -21,13 +22,6 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
       }
     }
     async init() {
-      this.root.innerHTML = `
-        <style>
-          :host {
-            display: contents;
-          }
-        </style>
-      `;
       let template =
         this.querySelector(':scope > textarea') ||
         this.querySelector(':scope > template');
@@ -57,6 +51,11 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
         });
       }
       this.watchAttributes();
+    }
+    setInitialStyle() {
+      this.root.innerHTML = `
+        <style>:host { display: contents }</style>
+      `;
     }
     getAttributeMapping() {
       let mapping = {};
