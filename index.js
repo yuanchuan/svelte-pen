@@ -198,10 +198,9 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
     if (!svelte) {
       svelte = await getSvelte(meta.version);
     }
+    let html = getTemplateValue(element);
     try {
-      let html = getTemplateValue(element);
-      let result = svelte.compile(html);
-      return result.js.code;
+      return svelte.compile(html).js.code;
     } catch (e) {
       printError(e);
       return 'export default null';
