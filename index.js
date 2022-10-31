@@ -45,10 +45,14 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
 
       let Component = (await import(url)).default;
       if (Component) {
-        this.component = new Component({
-          target: this.root,
-          props: this.getAttributeMapping()
-        });
+        try {
+          this.component = new Component({
+            target: this.root,
+            props: this.getAttributeMapping()
+          });
+        } catch (e) {
+          console.warn(e);
+        }
       }
       this.watchAttributes();
     }
@@ -160,7 +164,11 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
           if (!svelte) {
             svelte = await getSvelte(meta.version);
           }
-          return svelte.compile(code).js;
+          try {
+            return svelte.compile(code).js;
+          } catch (e) {
+            printError(e);
+          }
         }
         return null;
       }
@@ -195,8 +203,16 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
       let result = svelte.compile(html);
       return result.js.code;
     } catch (e) {
-      return '';
+      printError(e);
+      return 'export default null';
     }
+  }
+
+  function printError(e) {
+    console.warn(`
+(${e.code}) ${e.message}: Line ${e.start.line}, column ${e.start.column}, position ${e.pos}.
+
+${e.frame}`);
   }
 
   async function getCodePenSource(name, meta) {
