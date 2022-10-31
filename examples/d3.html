@@ -27,6 +27,9 @@
 
     export let value = getNewValue();
 
+    const width = .8;
+    const radius = 5;
+
     let tweenedValue = tweened(0, {
       duration: 600 + Math.random() * 200,
       easing: expoOut
@@ -35,9 +38,6 @@
     $: if (value !== undefined) {
       $tweenedValue = transformValue(value);
     }
-
-    let width = .8;
-    let radius = 5;
 
     let getAngle = scaleLinear()
       .domain([0, 100])
@@ -48,19 +48,19 @@
       .domain([0, 100])
       .range(['#6de835', '#db3232']);
 
+    let outlinePath = arc()({
+      innerRadius: radius - width,
+      outerRadius: radius,
+      startAngle: 0,
+      endAngle: Math.PI * 2
+    });
+
     $: arcPath = arc()
       .innerRadius(radius - width)
       .outerRadius(radius)
       .cornerRadius(10)
       .startAngle(0)
       .endAngle(getAngle($tweenedValue))();
-
-    $: outlinePath = arc()({
-      innerRadius: radius - width,
-      outerRadius: radius,
-      startAngle: 0,
-      endAngle: Math.PI * 2
-    });
 
     $: color = getColor($tweenedValue);
 
