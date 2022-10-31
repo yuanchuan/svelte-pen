@@ -21,6 +21,8 @@ Create Svelte component demo quickly.
 
 ### Import another pen as Svelte component on CodePen.
 
+See example: https://codepen.io/yuanchuan/pen/RwJPoNr
+
 ```html
 <svelte-pen><textarea>
   <Percent value={20} />
