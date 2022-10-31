@@ -8,15 +8,11 @@
 
 <svelte-pen><textarea>
 
-  <svg viewBox="0 0 100 100" on:click={getNewValue}>
-    <g transform="translate(50, 50)">
-      <g class="outline">
-        <path d={outline()} />
-      </g>
-      <g class="graph" fill={color}>
-        <path d={path} />
-        <text font-size="24.5" text-anchor="middle" y="10">{_value}%</text>
-      </g>
+  <svg viewBox="-5 -5 10 10" on:click={getNewValue}>
+    <path d={outline} />
+    <g fill={color}>
+      <path d={path} />
+      <text font-size="2.45" text-anchor="middle" y="1">{_value}%</text>
     </g>
   </svg>
 
@@ -28,8 +24,6 @@
     import { expoOut } from 'svelte/easing';
 
     export let value = 100 * Math.random();
-
-    $: _value = transformValue(value);
 
     function getNewValue() {
       value = 100 * Math.random();
@@ -43,10 +37,10 @@
       return Math.min(Math.max(result, 0), 100);
     }
 
-    let width = 8;
-    let radius = 50;
+    let width = .8;
+    let radius = 5;
 
-    let outline = arc()
+    let outlinePath = arc()
       .innerRadius(radius - width)
       .outerRadius(radius)
       .startAngle(0)
@@ -57,14 +51,14 @@
       easing: expoOut
     });
 
-    $: scaleAngle = scaleLinear()
+    let scaleAngle = scaleLinear()
       .domain([0, 100])
       .range([0, Math.PI * 2]);
 
-    $: scaleColor = scalePow()
+    let scaleColor = scalePow()
       .exponent(2)
       .domain([0, 100])
-      .range(['#6de835', '#e83562']);
+      .range(['#6de835', '#db3232']);
 
     $: arcPath = arc()
       .innerRadius(radius - width)
@@ -73,11 +67,13 @@
       .startAngle(0)
       .endAngle(scaleAngle($tween));
 
+    $: _value = transformValue(value);
     $: path = arcPath();
+    $: outline = outlinePath();
     $: color = scaleColor(_value);
 
     $: if (_value !== undefined) {
-      tween && tween.set(_value);
+      $tween = _value;
     }
   </script>
 
@@ -85,15 +81,10 @@
     svg {
       width: 100%;
       height: 100%;
-      overflow: visible;
       cursor: pointer;
       user-select: none;
-    }
-    text {
-      stroke: none;
       font-family: verdana;
-    }
-    .outline {
+      stroke: none;
       fill: rgba(255, 255, 255, .2);
     }
   </style>
