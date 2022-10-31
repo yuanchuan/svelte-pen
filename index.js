@@ -131,6 +131,10 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
     return name;
   }
 
+  function printError(e) {
+    console.warn(`(${e.code}) ${e.message}: Line ${e.start.line}, column ${e.start.column}. \n\n${e.frame}`);
+  }
+
   function transformInputSource(element, meta) {
     return {
       name: 'input-source',
@@ -205,10 +209,6 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
       printError(e);
       return 'export default null';
     }
-  }
-
-  function printError(e) {
-    console.warn(`(${e.code}) ${e.message}: Line ${e.start.line}, column ${e.start.column}. \n\n${e.frame}`);
   }
 
   async function getCodePenSource(name, meta) {
