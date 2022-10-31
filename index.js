@@ -209,10 +209,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('svelte-pen')) 
   }
 
   function printError(e) {
-    console.warn(`
-(${e.code}) ${e.message}: Line ${e.start.line}, column ${e.start.column}, position ${e.pos}.
-
-${e.frame}`);
+    console.warn(`(${e.code}) ${e.message}: Line ${e.start.line}, column ${e.start.column}. \n\n${e.frame}`);
   }
 
   async function getCodePenSource(name, meta) {
