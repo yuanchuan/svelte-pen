@@ -8,11 +8,13 @@
 
 <svelte-pen><textarea>
 
-  <svg viewBox="-5 -5 10 10" on:click={getNewValue}>
-    <path d={outline} />
+  <svg viewBox="-5 -5 10 10" on:click={handleClick}>
+    <path d={outlinePath} />
     <g fill={color}>
-      <path d={path} />
-      <text font-size="2.45" text-anchor="middle" y="1">{_value}%</text>
+      <path d={arcPath} />
+      <text font-size="2.45" text-anchor="middle" y="1">
+        {transformValue($tweenedValue)}%
+      </text>
     </g>
   </svg>
 
@@ -23,39 +25,25 @@
     import { tweened } from 'svelte/motion';
     import { expoOut } from 'svelte/easing';
 
-    export let value = 100 * Math.random();
+    export let value = getNewValue();
 
-    function getNewValue() {
-      value = 100 * Math.random();
-    }
+    let tweenedValue = tweened(0, {
+      duration: 600 + Math.random() * 200,
+      easing: expoOut
+    });
 
-    function transformValue(input) {
-      let result = Math.floor(input);
-      if (Number.isNaN(result)) {
-        result = 0;
-      }
-      return Math.min(Math.max(result, 0), 100);
+    $: if (value !== undefined) {
+      $tweenedValue = transformValue(value);
     }
 
     let width = .8;
     let radius = 5;
 
-    let outlinePath = arc()
-      .innerRadius(radius - width)
-      .outerRadius(radius)
-      .startAngle(0)
-      .endAngle(Math.PI * 2);
-
-    let tween = tweened(0, {
-      duration: 400 + Math.random() * 200,
-      easing: expoOut
-    });
-
-    let scaleAngle = scaleLinear()
+    let getAngle = scaleLinear()
       .domain([0, 100])
       .range([0, Math.PI * 2]);
 
-    let scaleColor = scalePow()
+    let getColor = scalePow()
       .exponent(2)
       .domain([0, 100])
       .range(['#6de835', '#db3232']);
@@ -65,15 +53,29 @@
       .outerRadius(radius)
       .cornerRadius(10)
       .startAngle(0)
-      .endAngle(scaleAngle($tween));
+      .endAngle(getAngle($tweenedValue))();
 
-    $: _value = transformValue(value);
-    $: path = arcPath();
-    $: outline = outlinePath();
-    $: color = scaleColor(_value);
+    $: outlinePath = arc()({
+      innerRadius: radius - width,
+      outerRadius: radius,
+      startAngle: 0,
+      endAngle: Math.PI * 2
+    });
 
-    $: if (_value !== undefined) {
-      $tween = _value;
+    $: color = getColor($tweenedValue);
+
+    function getNewValue() {
+      return 100 * Math.random();
+    }
+
+    function handleClick() {
+      value = getNewValue();
+    }
+
+    function transformValue(input) {
+      let result = Math.floor(input);
+      if (Number.isNaN(result)) return 0;
+      return Math.min(Math.max(result, 0), 100);
     }
   </script>
 
